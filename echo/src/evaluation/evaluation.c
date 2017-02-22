@@ -2279,7 +2279,7 @@ int main(int argc, char *argv[]){
   int delay = 0;
   push_out_of_cache = false;
   /* Initialize pmem pool */
-  const char* path = "/mnt/pmfs/efile";
+  const char* path = "/dev/shm/efile";
   void *pmp;
   if ((pmp = pmemalloc_init(path, (size_t)PMSIZE)) == NULL) {
     printf("Unable to allocate memory pool\n");
