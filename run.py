@@ -56,6 +56,8 @@ def main(argv):
         deleteCmd = 'rm -rf /dev/shm/efile'
         runCmd(deleteCmd, "Error", "Error deleting previous memory pool!")
         runCmd(sim_sizes[args.sim_size], "no free memory", "Simulation failed", True)
+    else:
+        print "Simulation size: " + str(args.sim_size) + " not found for workload:" + str(args.benchmarks[0])
     os.chdir('../../')
 
 if __name__ == "__main__":
