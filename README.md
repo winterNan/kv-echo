@@ -8,14 +8,14 @@ Workshop on Interactions of NVM/FLASH with Operating Systems and Workloads (INFL
 # To build
 ~~~
     $ cd echo/src
-    $ ./make_echo
+    $ ./build
 ~~~
 
 # To run :
 
 ~~~
     $ cd echo/src
-    $ ./run_echo --small
+    $ ./run --small
 ~~~
 
 Echo will create a persistent heap in /dev/shm defined by the macro PERSISTENT_HEAP.
@@ -35,5 +35,5 @@ make sure you have debugfs mounted in Linux.
     Go back to echo/:
     
     $ cd echo/src
-    $ sudo ./run_echo --small --trace           [Need to be root to collect trace]
+    $ sudo ./run --small --trace           [Need to be root to collect trace]
 ~~~
