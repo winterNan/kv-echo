@@ -15,7 +15,7 @@ Workshop on Interactions of NVM/FLASH with Operating Systems and Workloads (INFL
 
 ~~~
     $ cd echo/src
-    $ ./run --small
+    $ ./run --small                             [can pass --med or --large for bigger workloads]
 ~~~
 
 Echo will create a persistent heap in /dev/shm defined by the macro PERSISTENT_HEAP.
