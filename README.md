@@ -23,7 +23,7 @@ Echo will create a persistent heap in /dev/shm defined by the macro PERSISTENT_H
 To collect the trace of accesses to persistent memory,
 make sure you have debugfs mounted in Linux.
 
-# To run with tracing on :
+# To run with tracing enabled :
 ~~~
     $ mount | grep debugfs
     debugfs on /sys/kernel/debug type debugfs (rw,relatime)
