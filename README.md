@@ -35,5 +35,5 @@ make sure you have debugfs mounted in Linux.
     Go back to echo/:
     
     $ cd echo/src
-    $ sudo ./run --small --trace           [Need to be root to collect trace]
+    $ sudo ./run --small --trace                [Need to be root to collect trace]
 ~~~
