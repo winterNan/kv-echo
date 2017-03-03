@@ -7,6 +7,7 @@
  */
 
 //#define PIN_INSTALLED
+#define PERSISTENT_HEAP "/dev/shm/efile"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2283,7 +2284,7 @@ int main(int argc, char *argv[]){
   int delay = 0;
   push_out_of_cache = false;
   /* Initialize pmem pool */
-  const char* path = "/dev/shm/efile";
+  const char* path = PERSISTENT_HEAP;
   void *pmp;
   if ((pmp = pmemalloc_init(path, (size_t)PMSIZE)) == NULL) {
     printf("Unable to allocate memory pool\n");

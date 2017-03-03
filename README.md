@@ -18,7 +18,7 @@ Workshop on Interactions of NVM/FLASH with Operating Systems and Workloads (INFL
     $ ./run_echo --small
 ~~~
 
-Echo will create a persistent heap in /dev/shm.
+Echo will create a persistent heap in /dev/shm defined by the macro PERSISTENT_HEAP.
 
 To collect the trace of accesses to persistent memory,
 make sure you have debugfs mounted in Linux.
