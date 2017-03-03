@@ -2065,8 +2065,8 @@ void set_process_affinity(int cpu)
 /* Prints usage and then exits with return code -1. */
 void usage(char *progname)
 {
-  printf("USAGE: %s [--pause] [--delay=<secs>] [--kpvm-dram] "
-         "[--base] [--cache] <cpus> <iters> <ksize> <vsize> "
+  printf("USAGE: %s [--pause] [--delay=<secs>] [--kpvm-dram] \n"
+         "[--base] [--cache] <cpus> <iters> <ksize> <vsize>  \n"
          "<merge_every> <put_prob> <update_prob> <operations> <threads> \n", progname);
   printf("  If --pause is used, the evaluation will pause after the initial\n");
   printf("    key and value setup and wait for the user to press Enter.\n");
@@ -2119,7 +2119,7 @@ void parse_arguments(int argc, char *argv[], int *num_threads,
      * as well as long options.
      * See getopt_long(3).
      */
-    c = getopt_long(argc, argv, "npd:", long_options, &option_index);
+    c = getopt_long(argc, argv, "hnpd:", long_options, &option_index);
     if (c == -1) {
       break;  //no more - or -- options
     }
@@ -2169,7 +2169,7 @@ void parse_arguments(int argc, char *argv[], int *num_threads,
 
         /* Pick a routine that EXISTS but will never be called, VVV IMP !*/
         debug_fd = open("/sys/kernel/debug/tracing/set_ftrace_filter", O_WRONLY);
-        if(debug_fd != -1){ ret = write(debug_fd, "pmfs_mount", 10); }
+        if(debug_fd != -1){ ret = write(debug_fd, "pmfs_mount", 10); } // dummy routine
         else{ ret = -3; goto fail; }
         close(debug_fd);
 
@@ -2190,8 +2190,12 @@ void parse_arguments(int argc, char *argv[], int *num_threads,
       tmp_enable_trace = 1;
         break;
 fail:
-        fprintf(stderr, "failed to open trace mechanism, debug and waste your life ! err = %d\n", ret);
+        fprintf(stderr, "failed to open trace mechanism. need to be root. err = %d\n", ret);
         exit(ret);
+
+    case 'h':
+      usage(argv[0]);
+      break;
 
     default:  //getopt_long() may return ':' or '?' for unrecognized/missing options
       kp_error("unrecognized option or missing required option value\n");
@@ -2285,6 +2289,8 @@ int main(int argc, char *argv[]){
     printf("Unable to allocate memory pool\n");
     exit(0);
   }
+
+#ifdef _ENABLE_UTRACE
   /* Initialize tracing framework */
   gettimeofday(&glb_time, NULL);
   glb_tv_sec  = glb_time.tv_sec;
@@ -2292,7 +2298,6 @@ int main(int argc, char *argv[]){
   glb_start_time = glb_tv_sec * 1000000 + glb_tv_usec;
 
   pthread_spin_init(&tbuf_lock, PTHREAD_PROCESS_SHARED);
-  pthread_spin_init(&tot_epoch_lock, PTHREAD_PROCESS_SHARED);
   /* tbuf = (char*)malloc(MAX_TBUF_SZ); To avoid interaction with M's hoard */
   tbuf = (char*)mmap(0, MAX_TBUF_SZ, PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   /* MAZ_TBUF_SZ influences how often we compress and hence the overall execution speed. */
@@ -2302,7 +2307,9 @@ int main(int argc, char *argv[]){
   } else {
         fprintf(m_out, "Successfully allocated trace buffer.\n");
   }
+#endif
 
+  pthread_spin_init(&tot_epoch_lock, PTHREAD_PROCESS_SHARED);
   srandom(time(NULL));
 
   parse_arguments(argc, argv, &num_threads, &pause_before_start, &delay, 
@@ -2518,7 +2525,9 @@ int main(int argc, char *argv[]){
 #ifdef KP_EVAL_LOG
   fclose(log_file);
 #endif
-  printf("Total epochs = %llu\n", get_tot_epoch_count());
+  if(get_tot_epoch_count())
+    printf("Total epochs = %llu\n", get_tot_epoch_count());
+
   /* Free random keys and values */
   if(! free_gotten_vals){
     free(dest_values);

@@ -63,7 +63,7 @@ extern unsigned long long get_tot_epoch_count(void);
 
 #define die()	{assert(0);}
 
-#ifdef _ENABLE_TRACE
+#ifdef _ENABLE_UTRACE
 #define time_since_start				\
 	({						\
 		gettimeofday(&mtm_time, NULL);		\
