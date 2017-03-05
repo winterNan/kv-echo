@@ -1,25 +1,29 @@
 #!/bin/bash
-export LD_LIBRARY_PATH=./malloc/lib/:../lib/:$LD_LIBRARY_PATH
 action=$1
 trace=$2
 
 if [ "$trace" == "--trace" ]
 then
 	trace="-n"
+	sudo="sudo"
 fi
+
+export LD_LIBRARY_PATH=./malloc/lib/:../lib/:$LD_LIBRARY_PATH
+
+time="time"
 
 if [ "$action" == "-h" ] 
 then
 	./evaluation/evaluation -h
 elif [ "$action" == "--small" ]
 then
-	time ./evaluation/evaluation $trace --kpvm-dram 2 8 128 1024 8 8 7 10000 2
+	$sudo $time ./evaluation/evaluation $trace --kpvm-dram 2 8 128 1024 8 8 7 10000 2
 elif [ "$action" == "--med" ]
 then
-	time ./evaluation/evaluation $trace --kpvm-dram 2 16 128 1024 8 8 7 100000 2
+	$sudo $time ./evaluation/evaluation $trace --kpvm-dram 2 16 128 1024 8 8 7 100000 2
 elif [ "$action" == "--large" ]
 then
-	time ./evaluation/evaluation $trace --kpvm-dram 4 16 128 1024 8 8 7 1000000 2
+	$sudo $time ./evaluation/evaluation $trace --kpvm-dram 4 16 128 1024 8 8 7 1000000 2
 
 fi
 
