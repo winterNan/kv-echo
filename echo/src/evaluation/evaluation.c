@@ -2256,6 +2256,8 @@ fail:
            "num_threads=%d\n operations=%d\n\n", NUM_CPUS,
            iterations, key_size, value_size, merge_every, put_probability,
            update_probability, *num_threads, operations);
+    
+  fprintf(m_out, "Size of PM pool:%lu\n", PMSIZE);
 
   /* Validity checking: */
   if (NUM_CPUS < 1) {
