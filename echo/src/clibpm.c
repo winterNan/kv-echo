@@ -384,7 +384,7 @@ void *pmemalloc_reserve(size_t size) {
     
   printf("no free memory of size %lu available \n", nsize);
   printf("Increase the size of the PM pool:\n");
-  printf("Increase PSEGMENT_RESERVED_REGION_SIZE in benchmarks/echo/echo/include/pm_instr.h\n");
+  printf("Increase PSEGMENT_RESERVED_REGION_SIZE in whisper/kv-echo/echo/include/pm_instr.h and rebuild echo\n");
   //display();
   errno = ENOMEM;
   exit(EXIT_FAILURE);
