@@ -116,7 +116,6 @@ echo/src/malloc/gperftools-2.0/autom4te.cache/requests
 echo/src/malloc/gperftools-2.0/autom4te.cache/traces.0
 echo/src/malloc/gperftools-2.0/config.log
 echo/src/malloc/gperftools-2.0/config.status
-echo/src/malloc/gperftools-2.0/configure
 echo/src/malloc/gperftools-2.0/current_allocated_bytes_test
 echo/src/malloc/gperftools-2.0/current_allocated_bytes_test-current_allocated_bytes_test.o
 echo/src/malloc/gperftools-2.0/dynamic_annotations.o
@@ -186,7 +185,6 @@ echo/src/malloc/gperftools-2.0/realloc_unittest-realloc_unittest.o
 echo/src/malloc/gperftools-2.0/spinlock.o
 echo/src/malloc/gperftools-2.0/spinlock_internal.o
 echo/src/malloc/gperftools-2.0/src/config.h
-echo/src/malloc/gperftools-2.0/src/config.h.in
 echo/src/malloc/gperftools-2.0/src/config.h.in~
 echo/src/malloc/gperftools-2.0/stack_trace_table_test
 echo/src/malloc/gperftools-2.0/stack_trace_table_test-stack_trace_table_test.o
