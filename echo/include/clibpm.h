@@ -67,10 +67,17 @@
 #define PMEM_MIN_POOL_SIZE (1024 * 1024)
 #define PMEM_CHUNK_SIZE 64  /* alignment/granularity for all allocations */
 #define PMEM_STATE_MASK 63  /* for storing state in size lower bits */
+// Could these state bits be causing trouble ?
 #define PMEM_STATE_FREE 0 /* free clump */
 #define PMEM_STATE_RESERVED 1 /* reserved clump */
-#define PMEM_STATE_ACTIVE 2 /* active (allocated) clump */
-#define PMEM_STATE_UNUSED 3 /* must be highest value + 1 */
+#define PMEM_STATE_ACTIVATING 2 /* clump in process of being activated */
+#define PMEM_STATE_ACTIVE 3 /* active (allocated) clump */
+#define PMEM_STATE_FREEING 4  /* clump in the process of being freed */
+#define PMEM_STATE_UNUSED 5 /* must be highest value + 1 */
+
+#define PMEM(pmp, ptr_) ((pmp + (uintptr_t)ptr_))
+#define OFF(ptr_) ((decltype(ptr_))((uintptr_t)ptr_ - (uintptr_t)pmp))
+
 
 /* latency in ns */
 #define PCOMMIT_LATENCY 100
@@ -96,7 +103,7 @@ struct clump {
   struct {
     off_t off;
     void *ptr_;
-  } ons[PMEM_NUM_ON];
+  } on[PMEM_NUM_ON];
 };
 
 

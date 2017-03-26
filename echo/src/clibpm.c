@@ -178,6 +178,130 @@ void check() {
 
 }
 
+/*
+ * pmemalloc_recover -- recover after a possible crash
+ *
+ * Internal support routine, used during recovery.
+ */
+static void pmemalloc_recover(void *pmp) {
+  struct clump *clp;
+  int i;
+
+  DEBUG("pmp=0x%lx", pmp);
+
+  clp = PMEM(pmp, (struct clump *)PMEM_CLUMP_OFFSET);
+
+  while (clp->size) {
+    size_t sz = clp->size & ~PMEM_STATE_MASK;
+    int state = clp->size & PMEM_STATE_MASK;
+
+    DEBUG("[0x%lx]clump size %lx state %d", OFF(pmp, clp), sz, state);
+
+    switch (state) {
+      case PMEM_STATE_RESERVED:
+        /* return the clump to the FREE pool */
+        for (i = PMEM_NUM_ON - 1; i >= 0; i--)
+          clp->on[i].off = 0;
+        pmem_persist(clp, sizeof(*clp), 0);
+        clp->size = sz | PMEM_STATE_FREE;
+        pmem_persist(clp, sizeof(*clp), 0);
+        break;
+
+      case PMEM_STATE_ACTIVATING:
+        /* finish progressing the clump to ACTIVE */
+        for (i = 0; i < PMEM_NUM_ON; i++)
+          if (clp->on[i].off) {
+            uintptr_t *dest = PMEM(pmp, (uintptr_t * )clp->on[i].off);
+            *dest = (uintptr_t) clp->on[i].ptr_;
+            pmem_persist(dest, sizeof(*dest), 0);
+          } else
+            break;
+        for (i = PMEM_NUM_ON - 1; i >= 0; i--)
+          clp->on[i].off = 0;
+        pmem_persist(clp, sizeof(*clp), 0);
+        clp->size = sz | PMEM_STATE_ACTIVE;
+        pmem_persist(clp, sizeof(*clp), 0);
+        break;
+
+      case PMEM_STATE_FREEING:
+        /* finish progressing the clump to FREE */
+        for (i = 0; i < PMEM_NUM_ON; i++)
+          if (clp->on[i].off) {
+            uintptr_t *dest = PMEM(pmp, (uintptr_t * )clp->on[i].off);
+            *dest = (uintptr_t) clp->on[i].ptr_;
+            pmem_persist(dest, sizeof(*dest), 0);
+          } else
+            break;
+        for (i = PMEM_NUM_ON - 1; i >= 0; i--)
+          clp->on[i].off = 0;
+        pmem_persist(clp, sizeof(*clp), 0);
+        clp->size = sz | PMEM_STATE_FREE;
+        pmem_persist(clp, sizeof(*clp), 0);
+        break;
+    }
+
+    clp = (struct clump *) ((uintptr_t) clp + sz);
+    DEBUG("next clp %lx, offset 0x%lx", clp, OFF(pmp, clp));
+  }
+}
+
+/*
+ * pmemalloc_coalesce_free -- find adjacent free blocks and coalesce them
+ *
+ * Scan the pmeme pool for recovery work:
+ *      - RESERVED clumps that need to be freed
+ *      - ACTIVATING clumps that need to be ACTIVE
+ *      - FREEING clumps that need to be freed
+ *
+ * Internal support routine, used during recovery.
+ */
+static void pmemalloc_coalesce_free(void *pmp) {
+  struct clump *clp;
+  struct clump *firstfree;
+  struct clump *lastfree;
+  size_t csize;
+
+  DEBUG("pmp=0x%lx", pmp);
+
+  firstfree = lastfree = NULL;
+  csize = 0;
+  clp = PMEM(pmp, (struct clump *)PMEM_CLUMP_OFFSET);
+
+  while (clp->size) {
+    size_t sz = clp->size & ~PMEM_STATE_MASK;
+    int state = clp->size & PMEM_STATE_MASK;
+
+    DEBUG("[0x%lx]clump size %lx state %d", OFF(pmp, clp), sz, state);
+
+    if (state == PMEM_STATE_FREE) {
+      if (firstfree == NULL)
+        firstfree = clp;
+      else
+        lastfree = clp;
+      csize += sz;
+    } else if (firstfree != NULL && lastfree != NULL) {
+      DEBUG("coalesced size 0x%lx", csize);
+      firstfree->size = csize | PMEM_STATE_FREE;
+      pmem_persist(firstfree, sizeof(*firstfree), 0);
+      firstfree = lastfree = NULL;
+      csize = 0;
+    } else {
+      firstfree = lastfree = NULL;
+      csize = 0;
+    }
+
+    clp = (struct clump *) ((uintptr_t) clp + sz);
+    DEBUG("next clp %lx, offset 0x%lx", clp, OFF(pmp, clp));
+  }
+  if (firstfree != NULL && lastfree != NULL) {
+    DEBUG("coalesced size 0x%lx", csize);
+    DEBUG("firstfree 0x%lx next clp after firstfree will be 0x%lx", firstfree,
+          (uintptr_t )firstfree + csize);
+    firstfree->size = csize | PMEM_STATE_FREE;
+    pmem_persist(firstfree, sizeof(*firstfree), 0);
+  }
+}
+
 // pmemalloc_init -- setup a Persistent Memory pool for use
 void *pmemalloc_init(const char *path, size_t size) {
   int err;
@@ -265,6 +389,17 @@ void *pmemalloc_init(const char *path, size_t size) {
     perror("mapping failed ");
     goto out;
   }
+
+  /*
+   * scan pool for recovery work, five kinds:
+   *    1. pmem pool file sisn't even fully setup
+   *    2. RESERVED clumps that need to be freed
+   *    3. ACTIVATING clumps that need to be ACTIVE
+   *    4. FREEING clumps that need to be freed
+   *    5. adjacent free clumps that need to be coalesced
+   */
+  pmemalloc_recover(pmp);
+  pmemalloc_coalesce_free(pmp);
 
   return pmp;
 

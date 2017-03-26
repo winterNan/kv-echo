@@ -80,6 +80,7 @@ void pcm_calloc(void **ptr, size_t size)
 	 */
 	*ptr = pmalloc(size);
 	flush_range(*ptr, size);  //only has an effect if FLUSH_IT defined
+	pmemalloc_activate(*ptr);
 }
 
 void pcm_malloc(void **ptr, size_t size)
@@ -90,6 +91,7 @@ void pcm_malloc(void **ptr, size_t size)
 	 * the memory (because this object doesn't have a "state" field or
 	 * and pointers that need to be initialized to a known value!). */
 	*ptr = pmalloc(size);
+	pmemalloc_activate(*ptr);
 }
 
 void pcm_free(void **ptr)
