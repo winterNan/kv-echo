@@ -1701,7 +1701,7 @@ int kp_vte_create(kp_vte **vte, const void *value, uint64_t size, uint64_t lvn,
 
 	/* "CDDS": flush, set state, and flush again. The flushes will only actually
 	 * occur if use_nvm is true. */
-	kp_flush_range((void *)vte, sizeof(kp_vte) - sizeof(ds_state), use_nvm);
+	kp_flush_range((void *)*vte, sizeof(kp_vte) - sizeof(ds_state), use_nvm);
 	PM_EQU(((*vte)->state), (STATE_ACTIVE));
 	kp_flush_range((void *)&((*vte)->state), sizeof(ds_state), use_nvm);
 
