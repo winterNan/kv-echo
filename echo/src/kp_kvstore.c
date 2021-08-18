@@ -4420,7 +4420,7 @@ int kp_gc_perform_telescoping(kp_gc *gc, uint64_t cp_num)
 	factor = 2.0;  //2 is the only factor known to work properly, so far...
 	cp_to_collect_offset = factor;
 	i = 1;  //ignore least-significant bit
-	position = (int)(exp2(i));
+	position = 2;
 	num_bits = 8*sizeof(uint64_t);
 	position = 2;
 	kp_debug("cp_num=%ju, num_bits is %ju, position is %ju\n",

@@ -11,12 +11,26 @@ INCL = -I$(VECTOR_DIR)/ -Ihash_table/ -Ithreadpool/ -I../include
 MALLOC_DIR	= ./malloc
 MALLOC_LIBS	= $(MALLOC_DIR)/lib
 
-CC 	= gcc -ggdb -O0 -std=c99 -D_ENABLE_FTRACE
+###
+### For dynamic linking
+# CC 	= gcc -ggdb -O0 -std=c99 -D_ENABLE_FTRACE
+# XX = g++ -std=c++11 -ggdb -O0
+# KPKVLIBS = -lkp_kvstore
+# TCMALLOC_LIBS	= -ltcmalloc_minimal
+# JEMALLOC_LIBS	= -ljemalloc
+# CFLAGS 	= $(INCL) -D_GNU_SOURCE -Wall -fPIC -O0 
+
+###
+### For static linking
+### Use -t to see all the statically linked libries 
+CC 	= gcc -ggdb -O0 -std=c99 -D_ENABLE_FTRACE -pthread -static -static-libgcc
 XX = g++ -std=c++11 -ggdb -O0
 KPKVLIBS = -lkp_kvstore
-TCMALLOC_LIBS	= -ltcmalloc_minimal
-JEMALLOC_LIBS	= -ljemalloc
-CFLAGS 	= $(INCL) -D_GNU_SOURCE -Wall -fPIC -O0 
+TCMALLOC_LIBS	= -Ltcmalloc_minimal
+JEMALLOC_LIBS	= -Ljemalloc
+CFLAGS 	= $(INCL) -D_GNU_SOURCE -Wall -O0
+
+
 #CFLAGS 	= $(INCL) -D_GNU_SOURCE -g -Wall -fPIC -O3 -Wextra -pedantic
   # -pg enables profiling with gprof(1)
   # -D_GNU_SOURCE is needed for CPU_SET macros in evaluation.c, and also
@@ -104,8 +118,16 @@ jemalloc:
 _EVOBJ	= $(_OBJ) evaluation/evaluation.o 
 EVOBJ 	= $(patsubst %,$(ODIR)/%,$(_EVOBJ))
 
-evaluation: kp_kvstore-shared evaluation/evaluation.o clibpm.o
+###
+### For dynamic linking
+# evaluation: kp_kvstore-shared evaluation/evaluation.o clibpm.o
+# 	$(CC) -o evaluation/evaluation evaluation/evaluation.o  $(CFLAGS) $(LIBS)  $(KPKVLIBS)
+
+###
+### For static linking
+evaluation: kp_kvstore-static evaluation/evaluation.o clibpm.o
 	$(CC) -o evaluation/evaluation evaluation/evaluation.o  $(CFLAGS) $(LIBS)  $(KPKVLIBS)
+
 evaluation-shared: kp_kvstore-shared evaluation/evaluation.o 
 	$(CC) -o evaluation/evaluation evaluation/evaluation.o $(CFLAGS) $(LIBS) $(KPKVLIBS)
 #clibpm.o: clibpm.c
