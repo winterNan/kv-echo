@@ -216,3 +216,4 @@ echo/src/malloc/lib/pkgconfig/libtcmalloc_minimal_debug.pc
 echo/src/malloc/gperftools-2.0/Makefile
 echo/src/test_local_master
 
+*.lo
